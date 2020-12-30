@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+    web:
+      image: nginx:alpine
+      ports:
+          - "8080:80"
+      volumes:
+          - ./public_html:/public_html
+          - ./conf.d:/etc/nginx/conf.d
+          - /etc/localtime:/etc/localtime
+      networks:
+          - nginxphp
+
+    php:
+      build:
+        context: .
+        dockerfile: Dockerfile 
+      volumes:
+          - ./public_html:/public_html
+      expose:
+          - 9000
+      networks:
+          - nginxphp
+
+    mysql:
+      image: mysql:8.0.19
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: password
+        MYSQL_DATABASE: stt_db
+      ports:
+        - "3306:3306" 
+      networks:
+          - nginxphp  
+              
+    phpmyadmin:
+      image: phpmyadmin/phpmyadmin:5.0.1
+      restart: always
+      environment:
+        PMA_HOST: mysql
+        PMA_USER: root
+        PMA_PASSWORD: password
+      ports:
+        - "8081:80"
+      networks:
+          - nginxphp
+
+networks:
+     nginxphp:
